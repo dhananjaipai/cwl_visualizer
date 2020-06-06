@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CoC Viz</title>
+    <style>
+      @font-face {
+        font-family: "SupercellText-Regular";
+        src: url("https://cdn.supercell.com/fonts/supercell/supercelltext/full/supercelltext_w_rg.eot");
+        src: url("https://cdn.supercell.com/fonts/supercell/supercelltext/full/supercelltext_w_rg.eot?#iefix")
+            format("embedded-opentype"),
+          url("https://cdn.supercell.com/fonts/supercell/supercelltext/full/supercelltext_w_rg.woff2")
+            format("woff2"),
+          url("https://cdn.supercell.com/fonts/supercell/supercelltext/full/supercelltext_w_rg.woff")
+            format("woff"),
+          url("https://cdn.supercell.com/fonts/supercell/supercelltext/full/supercelltext_w_rg.ttf")
+            format("truetype");
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        display: flex;
+        font-family: "SupercellText-Regular";
+      }
+      .clan-wrapper,
+      .opponent-wrapper {
+        width: 50%;
+        background: #ecf0f1;
+      }
+      .list {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+      .opponent-wrapper {
+        background: #bdc3c7;
+      }
+      .status {
+        padding: 10px;
+      }
+      .player {
+        display: flex;
+        width: 100%;
+        padding: 5px;
+        overflow: hidden;
+      }
+      .info {
+        width: 30%;
+      }
+      .results {
+        width: 70%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+      }
+      .results > div {
+        padding: 0px 10px;
+      }
+      .player .th img {
+        width: 60px;
+        height: 60px;
+      }
+      .star {
+        width: 20px;
+        height: 20px;
+      }
+      .star.fail {
+        opacity: 0.3;
+      }
+      .defense {
+        text-align: right
+      }
+    </style>
+  </head>
+  <body>
+    <div class="clan-wrapper">
+      <div class="status"></div>
+      <div class="list"></div>
+    </div>
+    <div class="opponent-wrapper">
+      <div class="status"></div>
+      <div class="list"></div>
+    </div>
+    <script>
+      let data = JSON.parse(window.prompt("enter data from coc api"));
+      let generatePlayer = (
+        name,
+        th,
+        attackedPlayer,
+        attackStars,
+        defendedPlayer,
+        defendedStars
+      ) => {
+        return `<div class="player">
+                <div class="info">
+                    <div class="name">${name}</div>
+                    <div class="th"><img src="th/Town_Hall${th}.png"></div>
+                </div>
+                <div class="results">
+                    <div class="attack">
+                        <span>Attack</span>
+                        ${
+                          attackedPlayer
+                            ? `<div class="stars">
+                            <img class="star ${
+                              attackStars < 1 ? "fail" : ""
+                            }" src="th/star.png" alt="">
+                            <img class="star ${
+                              attackStars < 2 ? "fail" : ""
+                            }" src="th/star.png" alt="">
+                            <img class="star ${
+                              attackStars < 3 ? "fail" : ""
+                            }" src="th/star.png" alt="">
+                        </div>
+                        <div class="vs">${attackedPlayer}</div>
+                        `
+                            : ``
+                        }
+                    </div>
+                    <div class="defense">
+                        <span>Defense</span>
+                        ${
+                          defendedPlayer
+                            ? `<div class="stars">
+                            <img class="star ${
+                              defendedStars < 1 ? "fail" : ""
+                            }" src="th/star.png" alt="">
+                            <img class="star ${
+                              defendedStars < 2 ? "fail" : ""
+                            }" src="th/star.png" alt="">
+                            <img class="star ${
+                              defendedStars < 3 ? "fail" : ""
+                            }" src="th/star.png" alt="">
+                        </div>
+                        <div class="vs">${defendedPlayer}</div>
+                        `
+                            : ``
+                        }
+                    </div>
+                </div>
+            </div> `;
+      };
+      let clanStatus = `Clan : ${data.clan.name} | ${data.clan.attacks} attacks | ${data.clan.stars} stars`;
+      let opponentStatus = `Clan : ${data.opponent.name} | ${data.opponent.attacks} attacks | ${data.opponent.stars} stars`;
+      document.querySelector(".clan-wrapper .status").innerText = clanStatus;
+      document.querySelector(
+        ".opponent-wrapper .status"
+      ).innerText = opponentStatus;
+      let tagName = {
+        ...data.clan.members.reduce((x, a) => {
+          x[a.tag] = a.mapPosition + " | " + a.name;
+          return x;
+        }, {}),
+        ...data.opponent.members.reduce((x, a) => {
+          x[a.tag] = a.mapPosition + " | " + a.name;
+          return x;
+        }, {}),
+      };
+      let clanPlayers = data.clan.members
+        .sort((a, b) => a.mapPosition - b.mapPosition)
+        .map((x) =>
+          generatePlayer(
+            x.mapPosition + " | " + x.name,
+            x.townhallLevel,
+            x.attacks ? tagName[x.attacks[0].defenderTag] : "",
+            x.attacks ? x.attacks[0].stars : 0,
+            x.bestOpponentAttack
+              ? tagName[x.bestOpponentAttack.attackerTag]
+              : "",
+            x.bestOpponentAttack ? x.bestOpponentAttack.stars : ""
+          )
+        )
+        .join("");
+      let opponentPlayers = data.opponent.members
+        .sort((a, b) => a.mapPosition - b.mapPosition)
+        .map((x) =>
+          generatePlayer(
+            x.mapPosition + " | " + x.name,
+            x.townhallLevel,
+            x.attacks ? tagName[x.attacks[0].defenderTag] : "",
+            x.attacks ? x.attacks[0].stars : 0,
+            x.bestOpponentAttack
+              ? tagName[x.bestOpponentAttack.attackerTag]
+              : "",
+            x.bestOpponentAttack ? x.bestOpponentAttack.stars : ""
+          )
+        )
+        .join("");
+      console.log(clanPlayers);
+      console.log(opponentPlayers);
+      document.querySelector(".clan-wrapper .list").innerHTML = clanPlayers;
+      document.querySelector(
+        ".opponent-wrapper .list"
+      ).innerHTML = opponentPlayers;
+    </script>
+  </body>
+</html>
