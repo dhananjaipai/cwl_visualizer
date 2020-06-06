@@ -85,7 +85,14 @@
       <div class="list"></div>
     </div>
     <script>
-      let data = JSON.parse(window.prompt("enter data from coc api"));
+      {{/* let data = JSON.parse(window.prompt("enter data from coc api")); */}}
+      fetch("https://api.clashofclans.com/v1/clanwarleagues/wars/%232QPP8CP0R", {
+    "headers": {
+    "accept": "application/json",
+    "authorization": "bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjcyMGUwODcxLWZiYjEtNDZmNi1iODMyLWM2Yjg2Yzk1ZWFkMyIsImlhdCI6MTU5MDMyMjQ1OSwic3ViIjoiZGV2ZWxvcGVyLzQwYTY4MzVjLTY3NGQtNDMzOS02ZjJhLWVkMTc3M2FlNmI1YiIsInNjb3BlcyI6WyJjbGFzaCJdLCJsaW1pdHMiOlt7InRpZXIiOiJkZXZlbG9wZXIvc2lsdmVyIiwidHlwZSI6InRocm90dGxpbmcifSx7ImNpZHJzIjpbIjgyLjIxNy4xNTEuMTQiXSwidHlwZSI6ImNsaWVudCJ9XX0.sGvupS1aJ_0fsNXKXAVKLx4bOhxXBR38_1ywqMQ5psEtXhdotqledeV0YIGzDGBkANsm-RL-jZd2I0g5Wm6abw"
+  },
+  "mode": "no-cors",
+});
       let generatePlayer = (
         name,
         th,
@@ -189,8 +196,6 @@
           )
         )
         .join("");
-      console.log(clanPlayers);
-      console.log(opponentPlayers);
       document.querySelector(".clan-wrapper .list").innerHTML = clanPlayers;
       document.querySelector(
         ".opponent-wrapper .list"
